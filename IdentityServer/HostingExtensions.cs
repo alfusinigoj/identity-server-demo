@@ -3,6 +3,9 @@ using IdentityServerHost;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using Microsoft.Identity.Web;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace IdentityServer;
 
@@ -18,14 +21,14 @@ internal static class HostingExtensions
             .AddInMemoryClients(Config.Clients)
             .AddTestUsers(TestUsers.Users);
 
-        builder.Services.AddAuthentication()
-            .AddGoogle("Office365", options =>
-            {
-                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
 
-                options.ClientId = builder.Configuration["Authentication:Office365:ClientId"];
-                options.ClientSecret = builder.Configuration["Authentication:Office365:ClientSecret"];
-            })
+        builder.Services.AddAuthentication()
             .AddOpenIdConnect("oidc", "Demo IdentityServer", options =>
             {
                 options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
@@ -36,13 +39,44 @@ internal static class HostingExtensions
                 options.ClientId = "interactive.confidential";
                 options.ClientSecret = "secret";
                 options.ResponseType = "code";
+                options.CallbackPath = "/signin-oidc";
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = "name",
                     RoleClaimType = "role"
                 };
+
+                options.Events = new OpenIdConnectEvents()
+                {
+                    OnRedirectToIdentityProvider = context =>
+                    {
+                        var redirectUri = new Uri(context.ProtocolMessage.RedirectUri);
+                        context.ProtocolMessage.RedirectUri = new UriBuilder(context.ProtocolMessage.RedirectUri)
+                        {
+                            Scheme = "https",
+                            Port = redirectUri.IsDefaultPort ? -1 : redirectUri.Port
+                        }.ToString();
+                        return Task.CompletedTask;
+                    },
+                };
             });
+            // .AddMicrosoftIdentityWebApp(options => {
+            //     builder.Configuration.Bind("AzureAd", options);
+            //     options.Events = new OpenIdConnectEvents()
+            //     {
+            //         OnRedirectToIdentityProvider = context =>
+            //         {
+            //             var redirectUri = new Uri(context.ProtocolMessage.RedirectUri);
+            //             context.ProtocolMessage.RedirectUri = new UriBuilder(context.ProtocolMessage.RedirectUri)
+            //             {
+            //                 Scheme = "https",
+            //                 Port = redirectUri.IsDefaultPort ? -1 : redirectUri.Port
+            //             }.ToString();
+            //             return Task.CompletedTask;
+            //         },
+            //     };
+            //     }, displayName: "Azure");;
             //if running in domain joined windows under httpsys
             // builder.Services.Configure<HttpSysOptions>(o =>
             // {
@@ -61,8 +95,13 @@ internal static class HostingExtensions
             app.UseDeveloperExceptionPage();
         }
 
+        app.UseForwardedHeaders();
+        app.UseHttpsRedirection();
+
         app.UseStaticFiles();
         app.UseRouting();
+
+        app.UseMiddleware<SameSiteExternalAuthStrictMiddleware>();
             
         app.UseIdentityServer();
 
