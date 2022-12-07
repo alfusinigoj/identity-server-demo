@@ -2,18 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using WebApi.Auth.Sample;
 
 var builder = WebApplication.CreateBuilder(args);
 
-JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-
 // Add services to the container.
+builder.Services.AddRazorPages();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
 builder.Services.AddAuthentication(options =>
     {
@@ -23,7 +18,6 @@ builder.Services.AddAuthentication(options =>
     .AddCookie("Cookies")
     .AddOpenIdConnect("oidc", options =>
     {
-        // options.Authority = "https://localhost:8091";
         options.Authority = "https://identity-server.agreeablepond-3914c6b0.canadacentral.azurecontainerapps.io/";
 
         options.ClientId = "web";
@@ -62,37 +56,21 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
-
-app.UseRouting();
-
-
-
-app.UseAuthentication();
-// app.Use(async (context, next) =>
-// {
-//     if (!context.User.Identity.IsAuthenticated)
-//     {
-//         await context.ChallengeAsync();
-//     }
-//     else
-//     {
-//         await context.AuthenticateAsync();
-//         await next();
-//     }
-// });
-app.UseAuthorization();
-
 // Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options => {
-        options.RoutePrefix = string.Empty;
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApi.Auth.Sample");
-    });
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
-app.MapControllers().RequireAuthorization();
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapRazorPages().RequireAuthorization();
 
 app.Run();

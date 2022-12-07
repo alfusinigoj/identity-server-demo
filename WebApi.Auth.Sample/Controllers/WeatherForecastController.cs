@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Auth.Sample.Controllers;
@@ -16,6 +17,15 @@ public class WeatherForecastController : ControllerBase
     public WeatherForecastController(ILogger<WeatherForecastController> logger)
     {
         _logger = logger;
+    }
+
+    [HttpGet("user")]
+    public string GetUserName()
+    {
+        if (User.Identity.IsAuthenticated)
+            return User.Identity.Name;
+        else
+            return "not authenticated";
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
