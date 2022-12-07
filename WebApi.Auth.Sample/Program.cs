@@ -66,8 +66,6 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-app.UseMiddleware<SameSiteExternalAuthStrictMiddleware>();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
