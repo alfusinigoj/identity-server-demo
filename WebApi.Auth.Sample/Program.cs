@@ -50,6 +50,7 @@ internal class Program
             //         }
             //     },
             // });
+            //==========================
         });
 
         //==========================
@@ -69,6 +70,7 @@ internal class Program
         //         ValidateAudience = false,
         //     };
         // });
+        //==========================
 
         //==========================
         // OpenId Connect
@@ -110,6 +112,7 @@ internal class Program
                 },
             };
         });
+        //==========================
 
         var app = builder.Build();
 
@@ -136,6 +139,7 @@ internal class Program
             // options.OAuthClientId("web");
             // options.OAuthClientSecret("secret");
             // options.OAuthScopes(scopes.Split(','));
+            //==========================
 
             //==========================
             // OpenId Connect
@@ -147,6 +151,7 @@ internal class Program
                 else
                     await next();
             });
+            //==========================
         });
 
         app.Run();
