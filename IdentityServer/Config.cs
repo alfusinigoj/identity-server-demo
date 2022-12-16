@@ -55,10 +55,18 @@ public static class Config
                 AllowedGrantTypes = GrantTypes.Code,
 
                 // where to redirect after login
-                RedirectUris = { "https://localhost:8082/signin-oidc","https://localhost:8092/signin-oidc" ,"https://identity-server-demo-webapi.agreeablepond-3914c6b0.canadacentral.azurecontainerapps.io/signin-oidc"},
+                RedirectUris = { 
+                    "https://localhost:8082/oauth2-redirect.html", 
+                    "https://localhost:8082/signin-oidc",
+                    "https://localhost:8092/oauth2-redirect.html", 
+                    "https://localhost:8092/signin-oidc" ,
+                    "https://identity-server-demo-webapi.agreeablepond-3914c6b0.canadacentral.azurecontainerapps.io/signin-oidc"},
 
                 // where to redirect after logout
-                PostLogoutRedirectUris = { "https://localhost:8082/signout-callback-oidc","https://localhost:8092/signout-callback-oidc","https://identity-server-demo-webapi.agreeablepond-3914c6b0.canadacentral.azurecontainerapps.io/signout-callback-oidc" },
+                PostLogoutRedirectUris = { 
+                    "https://localhost:8082/signout-callback-oidc",
+                    "https://localhost:8092/signout-callback-oidc",
+                    "https://identity-server-demo-webapi.agreeablepond-3914c6b0.canadacentral.azurecontainerapps.io/signout-callback-oidc" },
 
                 AllowedScopes = new List<string>
                 {

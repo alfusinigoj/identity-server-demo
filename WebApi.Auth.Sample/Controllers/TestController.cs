@@ -5,21 +5,22 @@ namespace WebApi.Auth.Sample.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class WeatherForecastController : ControllerBase
+public class TestController : ControllerBase
 {
     private static readonly string[] Summaries = new[]
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-    private readonly ILogger<WeatherForecastController> _logger;
+    private readonly ILogger<TestController> _logger;
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    public TestController(ILogger<TestController> logger)
     {
         _logger = logger;
     }
 
-    [HttpGet("user")]
+    [HttpGet("loggedin")]
+    [Authorize]
     public string GetUserName()
     {
         if (User.Identity.IsAuthenticated)
@@ -28,8 +29,9 @@ public class WeatherForecastController : ControllerBase
             return "not authenticated";
     }
 
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
+    [HttpGet("weather")]
+    [Authorize]
+    public IEnumerable<WeatherForecast> GetWeather()
     {
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
